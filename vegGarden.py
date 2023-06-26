@@ -41,6 +41,7 @@ df = pd.DataFrame(list(collection.find()))
 df['_id'] = df['_id'].astype(str)  
 print(df.columns)
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+server = app.server
 
 
 app.layout = dbc.Container(
