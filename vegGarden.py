@@ -1,13 +1,14 @@
 import pandas as pd
 
 # pip install "pymongo[srv]"
-import pymongo
+#import pymongo
 
 # from bson.objectid import ObjectId
 # from datetime import datetime
 from dash import Dash, dcc, html, Input, Output, State,dash_table
 import dash_bootstrap_components as dbc
 #from dash_table import DataTable
+import plotly.express as px
 from datetime import date  # , datetime
 
 # datetime object containing current date and time
@@ -40,6 +41,7 @@ df = pd.DataFrame(list(collection.find()))
 # Convert id from ObjectId to string so it can be read by DataTable
 df['_id'] = df['_id'].astype(str)  
 print(df.columns)
+fig = px.bar(df, y='weight',  x='date',  color="type", barmode='group',text='weight')
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 
@@ -86,8 +88,11 @@ app.layout = dbc.Container(
                                             "value": "Marzio-Rigato Romanesco",
                                         },
                                         {"label": "Oscar", "value": "Oscar"},
-                                        {"label": "Zebrino", "value": "Zebrino"},
+                                        {"label": "Crispino-Plum", "value": "Crispino-Plum"},
                                         {"label": "Maggino", "value": "Maggino"},
+                                        {"label": "Dominus", "value": "Dominus"},
+                                        {"label": "Oskar", "value": "Oskar"},
+                                        {"label": "Luana", "value": "Luana"},
                                     ],
                                 ),
                             ],
@@ -178,8 +183,7 @@ app.layout = dbc.Container(
             ]
         ),
         dbc.Row([dbc.Col([html.Div([html.P("Entry Summary", id="output")])])]),
-        ], className="abcd"),]),
-        dbc.Col([dbc.Container([
+               
         dbc.Row([dbc.Col([html.Div(
                             [
                                 dbc.Button(
@@ -190,13 +194,15 @@ app.layout = dbc.Container(
                         dbc.Row([dbc.Col([dbc.Container(
                             [
                                
-    dbc.Label('Click a cell in the table:'),
+    dcc.Graph(figure=fig),
     dash_table.DataTable(data=df.to_dict('records'), id='tbl'),
                          
                            
                             ]
                         )])]),
-        ]),]),]),
+   
+        ], className="abcd"),]),
+        dbc.Col([]),]),
 
         html.Hr(),
         
