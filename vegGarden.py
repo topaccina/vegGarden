@@ -87,7 +87,7 @@ app.layout = dbc.Container(
                                             "label": "Marzio-Rigato Romanesco",
                                             "value": "Marzio-Rigato Romanesco",
                                         },
-                                        {"label": "Oscar", "value": "Oscar"},
+                                        #{"label": "Oscar", "value": "Oscar"},
                                         {"label": "Crispino-Plum", "value": "Crispino-Plum"},
                                         {"label": "Maggino", "value": "Maggino"},
                                         {"label": "Dominus", "value": "Dominus"},
