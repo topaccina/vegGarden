@@ -93,6 +93,7 @@ app.layout = dbc.Container(
                                         {"label": "Dominus", "value": "Dominus"},
                                         {"label": "Oskar", "value": "Oskar"},
                                         {"label": "Luana", "value": "Luana"},
+                                        {"label": "Dunne", "value": "Dunne"},
                                     ],
                                 ),
                             ],
