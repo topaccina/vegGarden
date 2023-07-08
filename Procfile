@@ -1,1 +1,1 @@
-web:gunicorn vegGarden:server
+web: gunicorn vegGarden:server
