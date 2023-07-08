@@ -1,2 +1,5 @@
 .venv
 vegGardenSelection2023.csv
+*.pyc
+.env
+.DS_Store
