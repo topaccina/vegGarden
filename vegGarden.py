@@ -28,20 +28,21 @@ except Exception as e:
 
 db = client["vegGarden"]
 collection = db["harvestTracking"]
-print(collection)
+selection=db["selection"]
 
-x = collection.find({}, {"category": "Zucchini"})
 
-# for data in x:
-#     print(data)
+#x = collection.find({}, {"category": "Zucchini"})
 
-df = pd.DataFrame(list(collection.find()))
-df=pd.DataFrame(data={'a':[1,2],'b':[1,2]})
+
+df_sel=pd.DataFrame(list(selection.find()))
+# Convert id from ObjectId to string so it can be read by DataTable
+df_sel['_id'] = df_sel['_id'].astype(str)
 df = pd.DataFrame(list(collection.find()))
 # Convert id from ObjectId to string so it can be read by DataTable
 df['_id'] = df['_id'].astype(str)  
-print(df.columns)
-fig = px.bar(df, y='weight',  x='date',  color="type", barmode='group',text='weight')
+#print(df.columns)
+df_sum=df.groupby(['category','type'])['weight'].sum().to_frame().reset_index()
+#fig = px.bar(df, y='weight',  x='date',  color="type", barmode='group',text='weight')
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 
@@ -61,11 +62,8 @@ app.layout = dbc.Container(
                                 dbc.Label("Category", html_for="Category"),
                                 dcc.Dropdown(
                                     id="dd-category",
-                                    options=[
-                                        {"label": "Zucchini", "value": "Zucchini"},
-                                        {"label": "Tomato", "value": "Tomato"},
-                                    ],
-                                ),
+                                    options=[{'label':i,'value':i} for i in df_sel['Category'].unique()]
+                                        ),
                             ],
                             className="mb-3",
                         ),
@@ -82,20 +80,8 @@ app.layout = dbc.Container(
                                 dbc.Label("Type", html_for="Type"),
                                 dcc.Dropdown(
                                     id="dd-type",
-                                    options=[
-                                        {
-                                            "label": "Marzio-Rigato Romanesco",
-                                            "value": "Marzio-Rigato Romanesco",
-                                        },
-                                        #{"label": "Oscar", "value": "Oscar"},
-                                        {"label": "Crispino-Plum", "value": "Crispino-Plum"},
-                                        {"label": "Maggino", "value": "Maggino"},
-                                        {"label": "Dominus", "value": "Dominus"},
-                                        {"label": "Oskar", "value": "Oskar"},
-                                        {"label": "Luana", "value": "Luana"},
-                                        {"label": "Dunne", "value": "Dunne"},
-                                    ],
-                                ),
+                                    options=[{'label':i,'value':i} for i in df_sel['Type'].unique()]
+                                        ),
                             ],
                             className="mb-3",
                         )
@@ -109,7 +95,7 @@ app.layout = dbc.Container(
                     [
                         html.Div(
                             [
-                                dbc.Label("Date", html_for="Date "),
+                                dbc.Label("Date  ", html_for="Date"),
                                 html.Br(),
                                 dcc.DatePickerSingle(
                                     id="dt-picker-date",
@@ -119,9 +105,9 @@ app.layout = dbc.Container(
                                     date=date.today(),#date(2023, 6, 1),
                                 ),
                                 print(type(date(2023, 6, 1)))
-                                # html.Br(),
+                                # #html.Br(),
                                 # html.P(id="output"),
-                            ]
+                            ] ,className='mb-3'
                         )
                     ]
                 ),
@@ -137,7 +123,7 @@ app.layout = dbc.Container(
                                 dbc.Input(
                                     id="in-pieces", placeholder="pieces", type="number"
                                 ),
-                            ]
+                            ],className='mb-3'
                         )
                     ]
                 ),
@@ -153,9 +139,9 @@ app.layout = dbc.Container(
                                 dbc.Input(
                                     id="in-weight", placeholder="weight", type="number"
                                 ),
-                                html.Br(),
+                                #html.Br(),
                                 # html.P(id="output"),
-                            ]
+                            ] ,className='mb-3'
                         )
                     ]
                 ),
@@ -163,13 +149,6 @@ app.layout = dbc.Container(
         ),
         dbc.Row(
             [
-                # dbc.Col([
-                #     html.Div(
-                #         [
-                #             dbc.Textarea(className="mb-3", id='feedback',
-                #                          placeholder="Write your feedback here"),
-                #         ])
-                # ]),
                 dbc.Col(
                     [
                         html.Div(
@@ -177,37 +156,42 @@ app.layout = dbc.Container(
                                 dbc.Button(
                                     "Submit", id="submit", className="me-2", n_clicks=0
                                 ),
-                            ],className="abcd"
+                            ],className='mb-3'
                         )
                     ]
                 ),
             ]
         ),
-        dbc.Row([dbc.Col([html.Div([html.P("Entry Summary", id="output")])])]),
+        dbc.Row([dbc.Col([html.Div([html.P("Your Entry Summary", id="output")],className='mb-3 border'
+                                   )])]),
+        dbc.Row([dbc.Col([html.Hr()])]),
                
         dbc.Row([dbc.Col([html.Div(
                             [
                                 dbc.Button(
-                                    "Retrieve", id="retrieve", className="me-2", n_clicks=0
+                                    "Get Data Summary", id="retrieve", className="me-2", n_clicks=0
                                 ),
-                            ]
+
+                            ],className='mb-3'
                         )])]),
                         dbc.Row([dbc.Col([dbc.Container(
                             [
                                
-    dcc.Graph(figure=fig),
-    dash_table.DataTable(data=df.to_dict('records'), id='tbl'),
+    #dcc.Graph(figure=fig),
+    dash_table.DataTable(#data=df[['category','type','date','pieces','weight']].to_dict('records')
+                        data=df_sum.to_dict('records')
+                         , id='tbl'),
                          
                            
-                            ]
+                            ],className='mb-3'
                         )])]),
    
-        ], className="abcd"),]),
+        ], className='mb-3'),]),
         dbc.Col([]),]),
 
         html.Hr(),
         
-    ],style={'border':'10px'}
+    ],style={'border':'10px'}, 
 )
 @app.callback(
     Output('tbl','data'), 
@@ -219,7 +203,9 @@ def update_table(n):
     df = pd.DataFrame(list(collection.find()))
     print(df)
     df['_id'] = df['_id'].astype(str) 
-    return df.to_dict("records")
+    df_sum=df.groupby(['category','type'])['weight'].sum().to_frame().reset_index()
+    #return df[['category','type','date','pieces','weight']].to_dict("records")
+    return df_sum.to_dict("records")
             
 
     
