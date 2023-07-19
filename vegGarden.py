@@ -40,16 +40,19 @@ df_sel['_id'] = df_sel['_id'].astype(str)
 df = pd.DataFrame(list(collection.find()))
 # Convert id from ObjectId to string so it can be read by DataTable
 df['_id'] = df['_id'].astype(str)  
-#print(df.columns)
+print(df.columns)
 df_sum=df.groupby(['category','type'])['weight'].sum().to_frame().reset_index()
 #fig = px.bar(df, y='weight',  x='date',  color="type", barmode='group',text='weight')
+#df_daily=df[df.date==str(date.today().strftime("%Y-%m-%d"))].groupby(['category'])['weight'].sum().to_frame().reset_index()
+df_daily=df[df.date==df.loc[df.index[-1]]['date']].groupby(['category'])['weight'].sum().to_frame().reset_index()
+print(df.loc[df.index[-1]]['date'])
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 
 
 app.layout = dbc.Container(
     [
-        html.H1("My vegGarden Tracking"),
+        html.H1("Orto-Il Mio"),
         html. Hr(),
         dbc.Row([dbc.Col([
         dbc.Container ([
@@ -165,7 +168,6 @@ app.layout = dbc.Container(
         dbc.Row([dbc.Col([html.Div([html.P("Your Entry Summary", id="output")],className='mb-3 border'
                                    )])]),
         dbc.Row([dbc.Col([html.Hr()])]),
-               
         dbc.Row([dbc.Col([html.Div(
                             [
                                 dbc.Button(
@@ -174,8 +176,16 @@ app.layout = dbc.Container(
 
                             ],className='mb-3'
                         )])]),
+        dbc.Row(dbc.Col([
+            dbc.Container([html.P("Last harvest summary"),dash_table.DataTable(#data=df[['category','type','date','pieces','weight']].to_dict('records')
+                        data=df_daily.to_dict('records')
+                         , id='tbl_daily'),])
+        ])),
+        dbc.Row([dbc.Col([html.Hr()])]),
+               
+        
                         dbc.Row([dbc.Col([dbc.Container(
-                            [
+                            [html.P("Overall summary by Category and Type"),
                                
     #dcc.Graph(figure=fig),
     dash_table.DataTable(#data=df[['category','type','date','pieces','weight']].to_dict('records')
@@ -207,7 +217,19 @@ def update_table(n):
     #return df[['category','type','date','pieces','weight']].to_dict("records")
     return df_sum.to_dict("records")
             
-
+@app.callback(
+    Output('tbl_daily','data'), 
+    [Input("retrieve", "n_clicks")],
+    prevent_initial_call=True,
+        
+)
+def update_table(n):
+    df = pd.DataFrame(list(collection.find()))
+    print(df)
+    df['_id'] = df['_id'].astype(str) 
+    df_daily=df[df.date==df.loc[df.index[-1]]['date']].groupby(['category'])['weight'].sum().to_frame().reset_index()
+    #return df[['category','type','date','pieces','weight']].to_dict("records")
+    return df_daily.to_dict("records")
     
 
 @app.callback(
